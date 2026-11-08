@@ -4,34 +4,48 @@ import { Inter, Newsreader } from "next/font/google";
 import { MotionProvider } from "@/components/motion-provider";
 import { SiteFooter } from "@/components/sections/site-footer";
 import { SiteHeader } from "@/components/sections/site-header";
+import { brand } from "@/lib/brand";
 import { site } from "@/lib/site";
 
 import "./globals.css";
 
-// Fallbacks only: Apple devices render New York (ui-serif) and SF (-apple-system).
+// Fallbacks only: Apple devices render New York (ui-serif) and SF (-apple-system),
+// so these aren't preloaded; elsewhere they swap in once loaded.
 const newsreader = Newsreader({
   subsets: ["latin"],
   variable: "--font-newsreader",
   display: "swap",
+  preload: false,
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  preload: false,
 });
+
+const defaultTitle = `${site.name} — Join the waitlist`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: {
-    default: `${site.name} — Join the waitlist`,
-    template: `%s — ${site.name}`,
-  },
+  title: { default: defaultTitle, template: `%s — ${site.name}` },
   description: site.description,
+  applicationName: site.name,
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    locale: "en_US",
+    title: defaultTitle,
+    description: site.description,
+    url: "/",
+  },
+  twitter: { card: "summary_large_image", title: defaultTitle, description: site.description },
+  formatDetection: { email: false, telephone: false, address: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#faf7f2",
+  themeColor: brand.canvas,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,7 +1,9 @@
 "use client";
 
 import { useId, useRef, useState, type FormEvent } from "react";
-import { AnimatePresence, motion, useAnimate, useReducedMotion } from "motion/react";
+import { AnimatePresence, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
+import { useAnimate } from "motion/react-mini";
 
 import { Button } from "@/components/ui/button";
 import { SpinnerIcon } from "@/components/ui/icons";
@@ -88,7 +90,7 @@ export function WaitlistForm({ className }: { className?: string }) {
 
       <AnimatePresence mode="wait" initial={false}>
         {state.status === "success" ? (
-          <motion.div
+          <m.div
             key="success"
             // The form (and the focused button) unmounts on success; keep keyboard focus here.
             ref={focusOnMount}
@@ -99,17 +101,17 @@ export function WaitlistForm({ className }: { className?: string }) {
             className="flex flex-col items-start gap-3 outline-none"
           >
             <SuccessPill />
-            <motion.p
+            <m.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ ...fade, delay: 0.25 }}
               className="ml-6 text-caption text-ink-muted"
             >
               We&apos;ll write to {state.email} the day Bristle is ready.
-            </motion.p>
-          </motion.div>
+            </m.p>
+          </m.div>
         ) : (
-          <motion.form
+          <m.form
             key="form"
             ref={formRef}
             noValidate
@@ -177,7 +179,7 @@ export function WaitlistForm({ className }: { className?: string }) {
               )}
             >
               <AnimatePresence mode="wait" initial={false}>
-                <motion.span
+                <m.span
                   key={error ?? "hint"}
                   initial={{ opacity: 0, y: -3 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -186,10 +188,10 @@ export function WaitlistForm({ className }: { className?: string }) {
                   className="block"
                 >
                   {error ?? HINT}
-                </motion.span>
+                </m.span>
               </AnimatePresence>
             </p>
-          </motion.form>
+          </m.form>
         )}
       </AnimatePresence>
     </div>

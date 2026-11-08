@@ -42,7 +42,7 @@ function ActionButton({
       <div className={cn("flex items-center justify-center rounded-pill", className)}>
         {children}
       </div>
-      <span className="text-micro text-mockup-muted">{label}</span>
+      <span className="text-micro text-ink-muted">{label}</span>
     </div>
   );
 }
@@ -55,7 +55,7 @@ export function TabBar() {
         <FeedIcon size={20} />
         Feed
       </div>
-      <div className="flex h-12 items-center gap-2 rounded-pill px-5 text-body font-semibold text-mockup-muted">
+      <div className="flex h-12 items-center gap-2 rounded-pill px-5 text-body font-semibold text-ink-muted">
         <LibraryIcon size={20} />
         Library
       </div>

@@ -1,14 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import {
-  animate,
-  AnimatePresence,
-  motion,
-  useMotionValue,
-  useTransform,
-  type Variants,
-} from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, type Variants } from "motion/react";
+import * as m from "motion/react-m";
 
 import { UndoIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
@@ -28,6 +22,8 @@ function clearedAfter(count: number) {
   for (let i = 0; i < count; i++) total += photoAt(i).sizeMB;
   return total;
 }
+
+const COUNTER_MS = 1100;
 
 const cardVariants = {
   enter: { x: 0, y: 28, scale: 0.9, rotate: 0, opacity: 0, zIndex: 0 },
@@ -91,26 +87,26 @@ export function PhoneMockup({ className }: { className?: string }) {
           </div>
           <AnimatePresence initial={false}>
             {phase !== "rest" && (
-              <motion.div
+              <m.div
                 key={deletingIndex}
                 initial={{ opacity: 0, scale: 0.8, y: 4 }}
                 animate={{ opacity: 1, scale: 1, y: 0, transition: springs.pop }}
                 exit={{ opacity: 0, y: -4, transition: { duration: 0.3, ease: easeOutSoft } }}
-                className="absolute top-8.5 right-5 origin-right rounded-pill bg-accent-soft px-2.5 py-0.75 text-micro font-semibold text-accent"
+                className="absolute top-8.5 right-5 origin-right rounded-pill bg-accent-soft px-2.5 py-0.75 text-micro font-semibold text-accent-ink"
               >
                 +{formatMB(deleting.sizeMB)}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
           <div className="absolute top-14.5 right-5 flex flex-col items-end gap-0.5">
             <Counter value={clearedAfter(cycle)} />
-            <span className="text-micro text-mockup-muted">to clear</span>
+            <span className="text-micro text-ink-muted">to clear</span>
           </div>
 
           {/* Card stack */}
           <div className="absolute top-31 left-3.5 h-111 w-83">
             <AnimatePresence initial={false}>
-              <motion.div
+              <m.div
                 key={cycle + 1}
                 variants={cardVariants}
                 initial="enter"
@@ -120,8 +116,8 @@ export function PhoneMockup({ className }: { className?: string }) {
               >
                 <PhotoFace photo={back} />
                 <Stamp photo={back} visible={false} />
-              </motion.div>
-              <motion.div
+              </m.div>
+              <m.div
                 key={cycle}
                 variants={cardVariants}
                 initial="enter"
@@ -131,7 +127,7 @@ export function PhoneMockup({ className }: { className?: string }) {
               >
                 <PhotoFace photo={front} preload={cycle === 0} />
                 <Stamp photo={front} visible={leaning} />
-              </motion.div>
+              </m.div>
             </AnimatePresence>
           </div>
 
@@ -149,28 +145,37 @@ export function PhoneMockup({ className }: { className?: string }) {
 /** Delete stamp that fades in as the card leans. Stays visible while the card swipes away. */
 function Stamp({ photo, visible }: { photo: MockPhoto; visible: boolean }) {
   return (
-    <motion.div
+    <m.div
       className="absolute inset-0"
       initial={false}
       animate={{ opacity: visible ? 1 : 0 }}
       transition={{ duration: 0.6, delay: visible ? 0.35 : 0, ease: easeOutSoft }}
     >
       <DeleteStamp sizeMB={photo.sizeMB} />
-    </motion.div>
+    </m.div>
   );
 }
 
 /** "184 MB" that counts up smoothly when the value changes. */
 function Counter({ value }: { value: number }) {
-  const count = useMotionValue(value);
-  const text = useTransform(count, (v) => formatMB(v, 0));
+  const [shown, setShown] = useState(value);
+  const shownRef = useRef(value);
 
+  // A tiny rAF tween keeps the full Motion animation engine out of the bundle.
   useEffect(() => {
-    const controls = animate(count, value, { duration: 1.1, ease: easeOutSoft });
-    return () => controls.stop();
-  }, [count, value]);
+    const from = shownRef.current;
+    if (from === value) return;
+    const start = performance.now();
+    let frame = requestAnimationFrame(function tick(now) {
+      const t = Math.min((now - start) / COUNTER_MS, 1);
+      shownRef.current = from + (value - from) * (1 - (1 - t) ** 3);
+      setShown(shownRef.current);
+      if (t < 1) frame = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
 
   return (
-    <motion.span className="font-serif text-stat text-accent tabular-nums">{text}</motion.span>
+    <span className="font-serif text-stat text-accent tabular-nums">{formatMB(shown, 0)}</span>
   );
 }
