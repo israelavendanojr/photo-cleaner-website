@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/*
+ * Bristle design tokens.
+ * Extracted from design/Bristle Waitlist.html. Components use these through
+ * Tailwind utilities (bg-canvas, text-ink-muted, shadow-card, rounded-pill…);
+ * never hard-code a value that belongs here.
+ */
+@theme {
+  /* Reset Tailwind's default palette so only brand colors exist. */
+  --color-*: initial;
+  --color-canvas: #faf7f2;
+  --color-surface: #fffdf9;
+  --color-ink: #1f1b18;
+  /* Design uses #8A817A; darkened to pass WCAG AA (5.25:1 on canvas). */
+  --color-ink-muted: #6f665f;
+  --color-line: #e9e3db;
+  --color-accent: #c24a3a;
+  --color-accent-soft: #f5e4df;
+  /* Accent text on accent-soft (4.95:1). */
+  --color-accent-ink: #a93f30;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Phone mockup: decorative, uses the design's exact values. */
+  --color-device: #1f1b18;
+  --color-device-edge: #3a332d;
+  --color-mockup-muted: #8a817a;
+  --color-photo-scrim: rgb(31 27 24 / 0.85);
+  --color-delete-tint: rgb(194 74 58 / 0.25);
+
+  /* Type scale */
+  --text-*: initial;
+  --text-display: clamp(3.125rem, 6.4vw, 5.25rem);
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.025em;
+  --text-wordmark: 1.625rem;
+  --text-wordmark--line-height: 1.2;
+  --text-wordmark--letter-spacing: -0.01em;
+  --text-stat: 1.75rem;
+  --text-stat--line-height: 1.05;
+  --text-photo-title: 1.625rem;
+  --text-photo-title--line-height: 1.1;
+  --text-lead: 1.1875rem;
+  --text-lead--line-height: 1.5;
+  --text-control: 1.0625rem;
+  --text-control--line-height: 1.5;
+  --text-title: 1rem;
+  --text-title--line-height: 1.4;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.4;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.4;
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.35;
+  /* Prose (MDX pages) */
+  --text-prose-h1: clamp(2.5rem, 5vw, 3.5rem);
+  --text-prose-h1--line-height: 1.05;
+  --text-prose-h1--letter-spacing: -0.02em;
+  --text-prose-h2: 1.5rem;
+  --text-prose-h2--line-height: 1.2;
+  --text-prose: 1.0625rem;
+  --text-prose--line-height: 1.6;
+
+  /* Radii */
+  --radius-*: initial;
+  --radius-pill: 999px;
+  --radius-card: 1.5rem;
+  --radius-photo: 2rem;
+  --radius-screen: 3rem;
+  --radius-device: 3.75rem;
+  --radius-island: 1.25rem;
+  --radius-bar: 0.1875rem;
+
+  /* Shadows: all derived from a warm brown, rgb(74 56 43). */
+  --shadow-*: initial;
+  --shadow-input: 0 8px 24px rgb(74 56 43 / 0.06);
+  --shadow-card: 0 8px 24px rgb(74 56 43 / 0.12);
+  --shadow-photo: 0 16px 44px rgb(74 56 43 / 0.14), 0 2px 6px rgb(74 56 43 / 0.05);
+  --shadow-device:
+    0 40px 80px rgb(74 56 43 / 0.22), 0 4px 10px rgb(74 56 43 / 0.1),
+    inset 0 0 0 1.5px var(--color-device-edge);
+
+  /* Named spacing (h-control, pt-header, gap-hero…) */
+  --spacing-control: 3.5rem;
+  --spacing-gutter: 1.5rem;
+  --spacing-header: 1.75rem;
+  --spacing-hero-top: 3.5rem;
+  --spacing-hero-bottom: 4.5rem;
+  --spacing-hero: 4rem;
+  --spacing-form: 2.25rem;
+  --spacing-trust: 2.75rem;
+  --spacing-footer: 2rem;
+  --spacing-hint: 0.875rem;
+  --spacing-dot: 0.375rem;
+
+  /* Widths */
+  --container-page: 75rem;
+  --container-copy: 33.75rem;
+  --container-lead: 28.75rem;
+  --container-prose: 42rem;
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-rise: rise 0.9s var(--ease-out-soft) both;
+  --animate-rise-scale: rise-scale 1.1s var(--ease-out-soft) both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  @keyframes rise-scale {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.97);
+    }
+  }
+}
+
+/* next/font variables live on <html>, so fonts are resolved inline. */
+@theme inline {
+  --font-serif: ui-serif, "New York", var(--font-newsreader), Georgia, serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-inter), system-ui, sans-serif;
+}
+
+/* Hairline used by inputs and outlined controls in the design. */
+@utility border-control {
+  border-width: 1.5px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-ink;
+  }
+
+  ::selection {
+    @apply bg-accent-soft text-accent-ink;
+  }
+
+  a,
+  button,
+  input {
+    @apply outline-offset-2 focus-visible:outline-2 focus-visible:outline-ink;
+  }
+}
