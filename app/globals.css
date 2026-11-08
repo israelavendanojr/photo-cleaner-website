@@ -27,6 +27,7 @@
   /* Phone mockup: decorative, uses the design's exact values. */
   --color-device: #1f1b18;
   --color-device-edge: #3a332d;
+  /* Icons only; mockup text uses ink-muted / accent-ink to pass contrast. */
   --color-mockup-muted: #8a817a;
   --color-photo-scrim: rgb(31 27 24 / 0.85);
   --color-delete-tint: rgb(194 74 58 / 0.25);
@@ -105,11 +106,19 @@
   /* Motion */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --animate-rise: rise 0.9s var(--ease-out-soft) both;
+  /* Transform only: keeps the headline visible from first paint (it's the LCP). */
+  --animate-settle: settle 0.9s var(--ease-out-soft) both;
   --animate-rise-scale: rise-scale 1.1s var(--ease-out-soft) both;
 
   @keyframes rise {
     from {
       opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  @keyframes settle {
+    from {
       transform: translateY(12px);
     }
   }

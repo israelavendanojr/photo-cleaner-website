@@ -6,7 +6,7 @@ import { WaitlistForm } from "./waitlist-form";
 export function Hero() {
   return (
     <section aria-labelledby="hero-title" className="flex max-w-copy grow basis-110 flex-col">
-      <Reveal order={0}>
+      <Reveal order={0} variant="settle">
         <h1 id="hero-title" className="font-serif text-display font-medium text-ink">
           Lighten your library.
         </h1>

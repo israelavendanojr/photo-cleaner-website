@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
+
 import { Hero } from "@/components/sections/hero";
 import { PhoneMockup } from "@/components/sections/phone-mockup";
 import { Reveal } from "@/components/ui/reveal";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function WaitlistPage() {
   return (
