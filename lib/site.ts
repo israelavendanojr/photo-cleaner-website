@@ -12,7 +12,8 @@ export const site = {
   copyrightYear: 2026,
 } as const;
 
-export const navLinks = [
+// Typed explicitly so the list can be empty while pages are hidden.
+export const navLinks: readonly { href: string; label: string }[] = [
   // { href: "/privacy", label: "Privacy" },
   // { href: "/support", label: "Support" },
-] as const;
+];
