@@ -37,7 +37,7 @@
   --text-display: clamp(3.125rem, 6.4vw, 5.25rem);
   --text-display--line-height: 1;
   --text-display--letter-spacing: -0.025em;
-  --text-wordmark: 1.625rem;
+  --text-wordmark: 1.875rem;
   --text-wordmark--line-height: 1.2;
   --text-wordmark--letter-spacing: -0.01em;
   --text-stat: 1.75rem;

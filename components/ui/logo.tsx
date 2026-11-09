@@ -3,24 +3,24 @@ import { cn } from "@/lib/cn";
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg
-      width="30"
-      height="30"
+      width="34"
+      height="34"
       viewBox="0 0 30 30"
       aria-hidden="true"
       focusable="false"
       className={className}
     >
-      <g transform="translate(0.6 -1.2) rotate(20 15 15) translate(1.5 1.5) scale(0.9)">
-        <rect x="13.8" y="1.5" width="2.4" height="13" rx="1.2" className="fill-ink" />
-        <rect x="10.8" y="13.5" width="8.4" height="3.2" rx="1.2" className="fill-accent" />
+      <g transform="translate(0.4 -0.8) rotate(20 15 15) translate(1.2 1.2) scale(0.92)">
+        <rect x="13.3" y="1" width="3.4" height="13" rx="1.7" className="fill-ink" />
+        <rect x="9.5" y="13" width="11" height="4.2" rx="1.6" className="fill-accent" />
         <path
-          d="M11 17h8l3.6 9.6a1.4 1.4 0 0 1-1.3 1.9H8.7a1.4 1.4 0 0 1-1.3-1.9Z"
+          d="M10 18.2h10l3.9 9a1.4 1.4 0 0 1-1.3 1.9H7.4a1.4 1.4 0 0 1-1.3-1.9Z"
           className="fill-ink"
         />
         <path
-          d="M13 20.5 12 28.5M15 20.5v8M17 20.5l1 8"
+          d="M12.2 24.6 11.6 30M15 24.4V30M17.8 24.6l.6 5.4"
           className="stroke-canvas"
-          strokeWidth="1"
+          strokeWidth="0.9"
           strokeLinecap="round"
         />
       </g>
