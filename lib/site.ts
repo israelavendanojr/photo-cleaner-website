@@ -13,6 +13,6 @@ export const site = {
 } as const;
 
 export const navLinks = [
-  { href: "/privacy", label: "Privacy" },
-  { href: "/support", label: "Support" },
+  // { href: "/privacy", label: "Privacy" },
+  // { href: "/support", label: "Support" },
 ] as const;
