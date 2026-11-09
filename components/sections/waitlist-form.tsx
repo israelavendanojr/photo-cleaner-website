@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { AnimatePresence, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 import { useAnimate } from "motion/react-mini";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { SpinnerIcon } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
+import { clientEnv } from "@/lib/env-client";
 import { easeOutSoft, fade } from "@/lib/motion";
 import { validateEmail } from "@/lib/validation";
 import { joinWaitlist } from "@/lib/waitlist";
@@ -22,6 +24,13 @@ type FormState =
   | { status: "error"; message: string };
 
 const HINT = "One email when it's ready. Nothing else.";
+
+/** If Turnstile hasn't produced a token by then (blocked, slow, erroring), let people submit anyway. */
+const CAPTCHA_GRACE_MS = 8000;
+
+function msSince(timestamp: number) {
+  return Date.now() - timestamp;
+}
 
 function focusOnMount(node: HTMLElement | null) {
   node?.focus({ preventScroll: true });
@@ -38,6 +47,58 @@ export function WaitlistForm({ className }: { className?: string }) {
   const [reservedHeight, setReservedHeight] = useState<number>();
   const ids = { input: useId(), message: useId(), honeypot: useId() };
 
+  // Bot protection: time since mount, plus a single-use Turnstile token.
+  const mountedAt = useRef(0);
+  const turnstileRef = useRef<TurnstileInstance>(undefined);
+  const tokenRef = useRef<string | null>(null);
+  const [hasToken, setHasToken] = useState(false);
+  const [widgetFailed, setWidgetFailed] = useState(false);
+  const [graceElapsed, setGraceElapsed] = useState(false);
+  const [graceEpoch, setGraceEpoch] = useState(0);
+  const [challengeVisible, setChallengeVisible] = useState(false);
+  const captchaReady = hasToken || widgetFailed || graceElapsed;
+  const captchaReadyRef = useRef(captchaReady);
+  const resolveCaptchaReady = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    mountedAt.current = Date.now();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setGraceElapsed(true), CAPTCHA_GRACE_MS);
+    return () => clearTimeout(timer);
+  }, [graceEpoch]);
+
+  useEffect(() => {
+    captchaReadyRef.current = captchaReady;
+    if (captchaReady) {
+      resolveCaptchaReady.current?.();
+      resolveCaptchaReady.current = null;
+    }
+  }, [captchaReady]);
+
+  function setToken(token: string | null) {
+    tokenRef.current = token;
+    setHasToken(token !== null);
+  }
+
+  /** Clicks that land before the widget is ready wait (with the spinner) instead of being dropped. */
+  function waitForCaptcha() {
+    if (captchaReadyRef.current) return Promise.resolve();
+    return new Promise<void>((resolve) => {
+      resolveCaptchaReady.current = resolve;
+    });
+  }
+
+  /** Tokens are single use: get a fresh one after every attempt. */
+  function resetCaptcha() {
+    setToken(null);
+    setWidgetFailed(false);
+    setGraceElapsed(false);
+    setGraceEpoch((epoch) => epoch + 1);
+    turnstileRef.current?.reset();
+  }
+
   const submitting = state.status === "submitting";
   const error = state.status === "error" ? state.message : null;
 
@@ -53,9 +114,13 @@ export function WaitlistForm({ className }: { className?: string }) {
     }
 
     setState({ status: "submitting" });
+    await waitForCaptcha();
     const result = await joinWaitlist(validation.email, {
       honeypot: honeypotRef.current?.value ?? "",
+      elapsedMs: msSince(mountedAt.current),
+      turnstileToken: tokenRef.current ?? "",
     });
+    resetCaptcha();
     if (result.ok) {
       setReservedHeight(formRef.current?.offsetHeight);
       setState({ status: "success", email: validation.email });
@@ -154,7 +219,11 @@ export function WaitlistForm({ className }: { className?: string }) {
                 />
               </div>
 
-              <Button type="submit" aria-disabled={submitting || undefined} className="relative">
+              <Button
+                type="submit"
+                aria-disabled={submitting || !captchaReady || undefined}
+                className="relative"
+              >
                 <span className={cn(submitting && "invisible")}>Join the waitlist</span>
                 {submitting && (
                   <span className="absolute inset-0 flex items-center justify-center">
@@ -165,10 +234,35 @@ export function WaitlistForm({ className }: { className?: string }) {
             </div>
 
             {/*
-            CAPTCHA: mount the bot-protection widget here (e.g. Turnstile in
-            invisible/managed mode) and pass its token through joinWaitlist().
-            It must not add visible height to the form.
+            Turnstile (Managed mode). Takes no space unless Cloudflare asks for
+            a click, then the checkbox slides open below the row.
           */}
+            <m.div
+              initial={false}
+              animate={
+                challengeVisible ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }
+              }
+              transition={{ duration: 0.3, ease: easeOutSoft }}
+              className="overflow-hidden"
+            >
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={clientEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                options={{
+                  theme: "light",
+                  appearance: "interaction-only",
+                  size: "flexible",
+                  refreshExpired: "auto",
+                }}
+                onSuccess={(token) => setToken(token)}
+                onExpire={() => setToken(null)}
+                onError={() => setWidgetFailed(true)}
+                onUnsupported={() => setWidgetFailed(true)}
+                onBeforeInteractive={() => setChallengeVisible(true)}
+                onAfterInteractive={() => setChallengeVisible(false)}
+                className="mt-hint"
+              />
+            </m.div>
 
             <p
               id={ids.message}

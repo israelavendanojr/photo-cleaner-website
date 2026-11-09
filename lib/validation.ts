@@ -14,3 +14,9 @@ export function validateEmail(input: string): EmailValidation {
   if (result.success) return { ok: true, email: result.data };
   return { ok: false, message: result.error.issues[0]?.message ?? "Enter a valid email." };
 }
+
+/** Server-side normalization: the same rules as the form, plus lowercasing for storage. */
+export function normalizeEmail(input: string): EmailValidation {
+  const result = validateEmail(input);
+  return result.ok ? { ok: true, email: result.email.toLowerCase() } : result;
+}

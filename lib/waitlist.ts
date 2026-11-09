@@ -1,29 +1,71 @@
 /**
  * The only bridge between the UI and the waitlist backend.
  *
- * Today this is a STUB: it waits ~800ms and reports success. When the backend
- * exists, replace the body of `joinWaitlist` with a real request (e.g.
- * `fetch("/api/waitlist", …)`) and map its responses onto `JoinResult`.
- * The form only depends on this signature, so no UI code needs to change.
+ * POSTs to /api/join (app/api/join/route.ts) and maps its responses onto
+ * `JoinResult`. The form only depends on this signature.
  */
 
-export type JoinErrorCode = "invalid_email" | "rate_limited" | "network" | "unknown";
+export type JoinErrorCode =
+  "invalid_email" | "verification_failed" | "rate_limited" | "network" | "unknown";
 
 export type JoinResult =
   | { ok: true; status: "joined" | "already_joined" }
   | { ok: false; error: JoinErrorCode; message: string };
 
 export type JoinOptions = {
-  /** Value of the hidden honeypot field. Humans leave it empty; the backend will reject non-empty values. */
+  /** Value of the hidden honeypot field. Humans leave it empty; the backend drops non-empty values. */
   honeypot?: string;
+  /** Milliseconds between the form mounting and submit. Very fast submissions are dropped as bots. */
+  elapsedMs?: number;
+  /** Cloudflare Turnstile token. Single use, so get a fresh one for every attempt. */
+  turnstileToken?: string;
 };
 
-const STUB_LATENCY_MS = 800;
+/** The server silently drops submissions sent sooner than this after the form mounted. */
+export const MIN_SUBMIT_MS = 2000;
+
+const MESSAGES: Record<JoinErrorCode, string> = {
+  invalid_email: "Enter a valid email, like you@example.com.",
+  verification_failed: "We couldn't verify you're human. Please try again.",
+  rate_limited: "Too many attempts. Please wait a moment and try again.",
+  network: "Couldn't reach the server. Check your connection and try again.",
+  unknown: "Something went wrong. Please try again.",
+};
+
+function failure(error: JoinErrorCode): JoinResult {
+  return { ok: false, error, message: MESSAGES[error] };
+}
 
 export async function joinWaitlist(email: string, options: JoinOptions = {}): Promise<JoinResult> {
-  // TODO(backend): POST { email, honeypot: options.honeypot } to the waitlist API.
-  void email;
-  void options;
-  await new Promise((resolve) => setTimeout(resolve, STUB_LATENCY_MS));
-  return { ok: true, status: "joined" };
+  // A person who autofills and clicks right away would trip the bot timer; hold them briefly instead.
+  let elapsedMs = options.elapsedMs ?? 0;
+  if (elapsedMs < MIN_SUBMIT_MS) {
+    await new Promise((resolve) => setTimeout(resolve, MIN_SUBMIT_MS - elapsedMs));
+    elapsedMs = MIN_SUBMIT_MS;
+  }
+
+  let response: Response;
+  try {
+    response = await fetch("/api/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        honeypot: options.honeypot ?? "",
+        elapsedMs,
+        turnstileToken: options.turnstileToken ?? "",
+      }),
+    });
+  } catch {
+    return failure("network");
+  }
+
+  // The server answers identically for new and existing emails, by design.
+  if (response.ok) return { ok: true, status: "joined" };
+
+  const body = (await response.json().catch(() => null)) as { error?: string } | null;
+  if (response.status === 400 && body?.error === "invalid_email") return failure("invalid_email");
+  if (response.status === 403) return failure("verification_failed");
+  if (response.status === 429) return failure("rate_limited");
+  return failure("unknown");
 }
