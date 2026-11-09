@@ -60,8 +60,10 @@ export async function joinWaitlist(email: string, options: JoinOptions = {}): Pr
     return failure("network");
   }
 
-  // The server answers identically for new and existing emails, by design.
-  if (response.ok) return { ok: true, status: "joined" };
+  if (response.ok) {
+    const body = (await response.json().catch(() => null)) as { status?: string } | null;
+    return { ok: true, status: body?.status === "already_joined" ? "already_joined" : "joined" };
+  }
 
   const body = (await response.json().catch(() => null)) as { error?: string } | null;
   if (response.status === 400 && body?.error === "invalid_email") return failure("invalid_email");

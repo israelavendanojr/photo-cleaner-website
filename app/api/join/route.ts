@@ -19,9 +19,10 @@ function json(body: unknown, status = 200) {
   return Response.json(body, { status, headers: NO_STORE });
 }
 
-// Identical for new emails, duplicates and silently dropped bots, so the
-// response never reveals who is on the list.
-const success = () => json({ ok: true });
+// Silently dropped bots get the same "joined" response as a new signup.
+// Duplicates are reported as "already_joined" so the form can say so; that
+// reveals list membership, which is acceptable for a launch waitlist.
+const success = (status: "joined" | "already_joined" = "joined") => json({ ok: true, status });
 
 function clientIp(request: Request): string | null {
   const { headers } = request;
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
 
     const { error } = await supabaseServer().from("waitlist").insert({ email: normalized.email });
     if (error) {
-      if (error.code === "23505") return success(); // Already on the list.
+      if (error.code === "23505") return success("already_joined");
       if (error.code === "23514") return json({ error: "invalid_email" }, 400); // Table check constraint.
       console.error("[join] Insert failed", {
         code: error.code,

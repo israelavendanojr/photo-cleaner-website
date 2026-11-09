@@ -7,7 +7,7 @@ export const site = {
   url: "https://getbristle.app",
   supportEmail: "support@getbristle.app",
   status: "Coming soon to iPhone",
-  footerNote: " ",
+  footerNote: "",
   // Static so pages stay fully prerendered; bump yearly.
   copyrightYear: 2026,
 } as const;

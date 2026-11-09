@@ -5,7 +5,7 @@ import * as m from "motion/react-m";
 import { Badge } from "@/components/ui/badge";
 import { easeOutSoft, springs } from "@/lib/motion";
 
-export function SuccessPill() {
+export function SuccessPill({ label = "You're on the list." }: { label?: string }) {
   return (
     <Badge variant="success" className="gap-2.5">
       <m.span
@@ -27,7 +27,7 @@ export function SuccessPill() {
           />
         </svg>
       </m.span>
-      You&apos;re on the list.
+      {label}
     </Badge>
   );
 }

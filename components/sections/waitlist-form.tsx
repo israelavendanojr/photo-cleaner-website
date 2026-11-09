@@ -20,7 +20,7 @@ import { SuccessPill } from "./success-pill";
 type FormState =
   | { status: "idle" }
   | { status: "submitting" }
-  | { status: "success"; email: string }
+  | { status: "success"; email: string; alreadyJoined: boolean }
   | { status: "error"; message: string };
 
 const HINT = "One email when it's ready. Nothing else.";
@@ -123,7 +123,11 @@ export function WaitlistForm({ className }: { className?: string }) {
     resetCaptcha();
     if (result.ok) {
       setReservedHeight(formRef.current?.offsetHeight);
-      setState({ status: "success", email: validation.email });
+      setState({
+        status: "success",
+        email: validation.email,
+        alreadyJoined: result.status === "already_joined",
+      });
     } else {
       setState({ status: "error", message: result.message });
       nudge();
@@ -150,7 +154,8 @@ export function WaitlistForm({ className }: { className?: string }) {
       {/* Announces progress and success; errors are announced by the message slot below. */}
       <p role="status" className="sr-only">
         {submitting && "Joining the waitlist…"}
-        {state.status === "success" && "You're on the list."}
+        {state.status === "success" &&
+          (state.alreadyJoined ? "You're already on the list." : "You're on the list.")}
       </p>
 
       <AnimatePresence mode="wait" initial={false}>
@@ -165,14 +170,20 @@ export function WaitlistForm({ className }: { className?: string }) {
             transition={{ duration: 0.5, ease: easeOutSoft }}
             className="flex flex-col items-start gap-3 outline-none"
           >
-            <SuccessPill />
+            <SuccessPill
+              label={state.alreadyJoined ? "You're already on the list." : "You're on the list."}
+            />
             <m.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ ...fade, delay: 0.25 }}
               className="ml-6 text-caption text-ink-muted"
             >
-              We&apos;ll write to {state.email} the day Bristle is ready.
+              {state.alreadyJoined ? (
+                <>We're happy to see you again. We&apos;ll reach out at launch.</>
+              ) : (
+                <>We&apos;ll write to {state.email} once Bristle is ready.</>
+              )}
             </m.p>
           </m.div>
         ) : (
