@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 
 import { Card } from "@/components/ui/card";
-import { LockIcon, UndoIcon } from "@/components/ui/icons";
+import { LockIcon, TagIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 
 type TrustPoint = {
@@ -13,13 +13,13 @@ type TrustPoint = {
 const points: TrustPoint[] = [
   {
     icon: LockIcon,
-    title: "Everything stays on your iPhone.",
-    body: "Photos are sorted on-device. Nothing is uploaded, and there's no account to make.",
+    title: "We respect your privacy",
+    body: "All photos kept on-device. Nothing is uploaded. No account needed.",
   },
   {
-    icon: UndoIcon,
-    title: "Nothing is deleted until you confirm it.",
-    body: "Deleted photos stay in Recently Deleted for 30 days.",
+    icon: TagIcon,
+    title: "No subscriptions",
+    body: "One time purchase to everything. Try it for free",
   },
 ];
 
