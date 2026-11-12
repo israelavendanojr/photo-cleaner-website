@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Newsreader } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 
 import { MotionProvider } from "@/components/motion-provider";
 import { SiteFooter } from "@/components/sections/site-footer";
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
           <SiteFooter />
         </MotionProvider>
+        <Analytics />
       </body>
     </html>
   );
